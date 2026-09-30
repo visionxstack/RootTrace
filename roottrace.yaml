@@ -1,0 +1,108 @@
+# RootTrace Configuration File
+# All fields have safe defaults — only target scope is required.
+
+# ─── Scope ───────────────────────────────────────────────────────────────────
+# Authoritative in-scope boundary. Every outbound request is checked against
+# this configuration before being allowed.
+scope:
+  # Exact domain/host targets
+  targets:
+    - example.com
+    - api.example.com
+
+  # Wildcard patterns — *.example.com includes sub.example.com AND example.com
+  wildcards:
+    - "*.example.com"
+
+  # URL prefix-based scope (optional — useful for single-page app targets)
+  prefixes: []
+
+  # Explicit exclusions — always out-of-scope regardless of wildcard matches
+  exclusions:
+    - "staging.example.com"
+    - "*.internal.example.com"
+
+  # IP CIDR ranges explicitly in scope (optional)
+  ip_ranges: []
+
+# ─── Storage ─────────────────────────────────────────────────────────────────
+storage:
+  # Directory for all persistent data
+  path: "./data"
+  # bbolt database file
+  db: "./data/roottrace.db"
+
+# ─── Logging ─────────────────────────────────────────────────────────────────
+logging:
+  level: "info"     # debug | info | warn | error
+  format: "json"    # json | text
+
+# ─── DNS ─────────────────────────────────────────────────────────────────────
+dns:
+  # Number of parallel DNS resolution workers
+  concurrency: 50
+  # Per-query timeout
+  timeout: 5s
+  # Retry attempts on transient failure
+  retries: 2
+  # Custom resolvers (leave empty to use system resolvers)
+  resolvers: []
+  # Record types to collect (A, AAAA, MX, TXT, NS, CNAME, SOA)
+  record_types:
+    - A
+    - AAAA
+    - MX
+    - TXT
+    - NS
+    - CNAME
+
+# ─── HTTP ─────────────────────────────────────────────────────────────────────
+http:
+  # Per-request timeout (connect + read)
+  timeout: 15s
+  # Maximum response body size (bytes) — prevents decompression bombs
+  max_response_size: 10485760  # 10 MiB
+  # Follow redirects (always within scope)
+  follow_redirects: true
+  # Maximum redirects to follow
+  max_redirects: 10
+  # User-Agent header
+  user_agent: "RootTrace/1.0 (authorized-security-recon)"
+  # HTTP/2 support
+  http2: true
+
+# ─── Crawler ─────────────────────────────────────────────────────────────────
+crawler:
+  # Maximum number of URLs to crawl per session
+  max_urls: 10000
+  # Maximum crawl depth from seed URLs
+  max_depth: 5
+  # Parallel crawl workers
+  concurrency: 30
+  # Per-URL timeout
+  timeout: 10s
+
+# ─── JavaScript ──────────────────────────────────────────────────────────────
+javascript:
+  # Directory to store downloaded JS files
+  store_path: "./data"
+  # Download workers
+  concurrency: 10
+  # Per-file download timeout
+  download_timeout: 30s
+  # Maximum JS file size to download and analyze
+  max_file_size: 52428800  # 50 MiB
+
+# ─── Concurrency ─────────────────────────────────────────────────────────────
+concurrency:
+  # Parallel HTTP probe workers (for host verification)
+  http_concurrency: 50
+
+# ─── Passive Data Providers ──────────────────────────────────────────────────
+providers:
+  # Enabled passive subdomain sources
+  # Available: crtsh, hackertarget, alienvault
+  enabled:
+    - crtsh
+    - hackertarget
+    - alienvault
